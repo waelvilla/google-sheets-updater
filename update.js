@@ -1,8 +1,11 @@
 
 const { google } = require('googleapis');
-const path = require('path')
+const dotenv = require('dotenv')
 const { auth } = require("./auth");
 const data = require('./user.json')
+dotenv.config()
+
+const { spreadsheetId } = process.env
 
 const makeRows = (json) => {
   const result = []
@@ -31,7 +34,7 @@ function getRowId(sheets, id) {
   const column = 'A'
   return new Promise((resolve, reject) => {
     sheets.spreadsheets.values.get({
-      spreadsheetId: '1xCRCt59np7oTS5uKahonRjWnBfX9aYBnK6wnDOvSvDY',
+      spreadsheetId,
       range: `Sheet1!${column}1:D`,
     })
       .then(res => {
@@ -57,7 +60,7 @@ function getRowId(sheets, id) {
 
 function updateRowById({ sheets, rowId, rows }) {
   sheets.spreadsheets.values.update({
-    spreadsheetId: '1xCRCt59np7oTS5uKahonRjWnBfX9aYBnK6wnDOvSvDY',
+    spreadsheetId,
     range: `Sheet1!${rowId}:D`,
     // How the input data should be interpreted.
     valueInputOption: 'RAW',  // TODO: Update placeholder value.

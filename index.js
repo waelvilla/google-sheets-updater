@@ -1,6 +1,5 @@
 
 const { google } = require('googleapis');
-const path = require('path')
 const dotenv = require('dotenv')
 const { auth } =  require("./auth");
 const data = require('./user.json')

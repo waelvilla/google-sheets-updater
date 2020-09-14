@@ -1,7 +1,6 @@
 const fs= require('fs');
 const readline = require('readline');
 const { google } = require('googleapis');
-const path = require('path')
 
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -11,15 +10,6 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = 'token.json';
   async function auth(callback){
     return new Promise((resolve, reject) => {
-      // const baseDir = path.dirname()
-        // Load client secrets from a local file.
-        // try{
-        //   const content = require('./credentials.json')
-        //   resolve(authorize(JSON.parse(content), callback))
-        // }
-        // catch(err){
-        //   reject(console.log('Error loading client secret file:', err));
-        // }
     fs.readFile(`${__dirname}/credentials.json`, (err, content) => {
       if (err) return console.log('Error loading client secret file:', err);
       // Authorize a client with credentials, then call the Google Sheets API.
