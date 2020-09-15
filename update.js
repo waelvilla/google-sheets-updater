@@ -5,12 +5,12 @@ const { auth } = require("./auth");
 const data = require('./user.json')
 dotenv.config()
 
-const { spreadsheetId } = process.env
+const { spreadsheetId, sheetName, titles } = process.env
 
 const makeRow = (json = {}) => {
   const result = []
-  const titles = [ 'id', 'patientName', 'phone', 'category', 'selectedRole', 'selectedDisease', 'clickedTopic', 'clickedService', 'paid' ]
-  for(const key of titles){
+  const sheetTitles =  titles.split(',')
+  for(const key of sheetTitles){
     if(json[key]){
       result.push(json[key])
     } else {
@@ -30,9 +30,9 @@ const makeUpdateRows = (json, old=[]) => {
     } else if(!item && old[index]){
       return old[index]
     }
-    return old[index]
+    return item
   })
-  return result
+  return [result]
 }
 
 
@@ -57,7 +57,7 @@ function getRowById(sheets, id) {
   return new Promise((resolve, reject) => {
     sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `Sheet1!${column}1:D`,
+      range: `${sheetName}!${column}1:J`,
     })
       .then(res => {
         const rows = res.data.values;
@@ -83,7 +83,7 @@ function getRowById(sheets, id) {
 function updateRowById({ sheets, rowId, rows }) {
   sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `Sheet1!${rowId}:D`,
+    range: `${sheetName}!${rowId}:J`,
     // How the input data should be interpreted.
     valueInputOption: 'RAW',  // TODO: Update placeholder value.
 

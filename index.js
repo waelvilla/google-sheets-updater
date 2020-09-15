@@ -5,7 +5,7 @@ const { auth } =  require("./auth");
 const data = require('./user.json')
 dotenv.config()
 
-const { spreadsheetId } = process.env
+const { spreadsheetId, sheetName } = process.env
 
 const makeRows = (json) => {
   const result = []
@@ -31,7 +31,7 @@ run()
 function getData(auth) {
   sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: 'Sheet1!A1:D',
+    range: `${sheetName}!A1:J`,
   })
   .then(res=>{
     const rows = res.data.values;
@@ -54,7 +54,7 @@ function getRowId(sheets, id) {
   return new Promise((resolve, reject) => {
     sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `Sheet1!${column}1:D`,
+      range: `${sheetName}!${column}1:J`,
     })
     .then(res=>{
       const rows = res.data.values;
@@ -77,26 +77,10 @@ function getRowId(sheets, id) {
   })
 }
 
-function updateRowById({sheets, rowId, rows }){
-  sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `Sheet1!${rowId}:D`,
-        // How the input data should be interpreted.
-  valueInputOption: 'RAW',  // TODO: Update placeholder value.
-
-  requestBody: {
-      values: rows
-  }
-  })
-  .then(res => {
-      console.log('res', res.statusText);
-  }).catch((err) => console.log("Error: ", err))
-}
-
 function addRow({sheets, rows }){
     sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: 'Sheet1!A1:D',
+      range: `${sheetName}!A1:J`,
           // How the input data should be interpreted.
     valueInputOption: 'RAW',  // TODO: Update placeholder value.
 
