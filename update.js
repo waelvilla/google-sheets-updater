@@ -5,7 +5,7 @@ const { auth } = require("./auth");
 const data = require('./user.json')
 dotenv.config()
 
-const { spreadsheetId, sheetName, titles } = process.env
+const { spreadsheetId, DEFAULT_SHEET, titles } = process.env
 
 const makeRow = (json = {}) => {
   const result = []
@@ -17,6 +17,12 @@ const makeRow = (json = {}) => {
       result.push('')
     }
   }
+  return result
+}
+
+const makeRows = (json) => {
+  const result = []
+  result.push(Object.values(json))
   return result
 }
 
@@ -35,24 +41,37 @@ const makeUpdateRows = (json, old=[]) => {
   return [result]
 }
 
-
+let sheets = google.sheets({version: 'v4'});
 /* RUN */
 function run() {
   auth((client) => {
-    const sheets = google.sheets({ version: 'v4', auth: client });
-
-    getRowById(sheets, data.id)
-    .then(({row, rowId}) => {
-      console.log('got id: ', rowId);
-      const rows = makeUpdateRows(data, row)
-        updateRowById({ sheets, rowId: `A${rowId}`, rows })
-      }).catch(err => console.log('error ', err))
+    sheets = google.sheets({ version: 'v4', auth: client });
+    
+    runUpdate(DEFAULT_SHEET)
+    runUpdate(data.category)
   })
 }
 
 run()
 
-function getRowById(sheets, id) {
+function runUpdate(sheetName){
+
+  getRowById(data.id, sheetName)
+  .then(({row, rowId}) => {
+    console.log('got id: ', rowId);
+    const rows = makeUpdateRows(data, row)
+      updateRowById({ rowId: `A${rowId}`, rows, sheetName })
+    }).catch(err =>{
+      console.log('error ', err)
+      if(err=='row does not exist'){
+        //THEN insert row
+        const rows = makeRows(data)
+        addRow({rows, sheetName })
+      }
+    }).catch(err => console.log('error inserting', err))
+}
+
+function getRowById(id, sheetName) {
   const column = 'A'
   return new Promise((resolve, reject) => {
     sheets.spreadsheets.values.get({
@@ -80,7 +99,7 @@ function getRowById(sheets, id) {
   })
 }
 
-function updateRowById({ sheets, rowId, rows }) {
+function updateRowById({ rowId, rows, sheetName }) {
   sheets.spreadsheets.values.update({
     spreadsheetId,
     range: `${sheetName}!${rowId}:J`,
@@ -95,3 +114,21 @@ function updateRowById({ sheets, rowId, rows }) {
       console.log('res', res.statusText);
     }).catch((err) => console.log("Error: ", err))
 }  
+
+function addRow({rows, sheetName }){
+  sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: `${sheetName}!A1:J`,
+        // How the input data should be interpreted.
+  valueInputOption: 'RAW',  // TODO: Update placeholder value.
+
+  // How the input data should be inserted.
+  insertDataOption: 'INSERT_ROWS',  // TODO: Update placeholder value.
+  requestBody: {
+      values: rows
+  }
+  })
+  .then(res => {
+      console.log('res', res.statusText);
+  }).catch((err) => console.log("Error: ", err))
+}
